@@ -1,0 +1,67 @@
+﻿name: PromptShield CI
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    name: "Test Suite (Python ${{ matrix.python-version }}, ${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Run unit tests (Phase 1 – detection logic, both layers)
+        run: pytest -v tests/test_phase1.py
+
+      - name: Run integration tests (Phase 2 – 28 injection + 25 benign payloads from benchmark)
+        run: pytest -v tests/test_phase2_integration.py
+
+      - name: Run demo tests (Phase 3 – vector store, mock LLM, pipeline end-to-end)
+        run: pytest -v tests/test_phase3_demo.py
+
+      - name: Run full test suite
+        run: pytest -v --tb=short
+
+      - name: Upload test results (if failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-logs-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: .pytest_cache/
+
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install ruff
+        run: pip install ruff
+      - name: Ruff check (no autofix)
+        run: ruff check promptshield/ tests/ demo/ --select E,W,F --ignore E501,E402,F401,W291,W293 || true

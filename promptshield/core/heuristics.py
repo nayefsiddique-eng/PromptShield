@@ -65,7 +65,13 @@ class HeuristicDetector:
             "prompt_leakage",
             "system_prompt_extraction",
             0.85,
-            re.compile(r"(?i)\b(repeat|print|output|display|show|reveal|echo|leak)\s+(the\s+)?(above|system|initial|hidden|secret|master)\s+(prompt|instructions?|directives?|rules?)\b"),
+            re.compile(
+                r"(?i)\b("
+                r"(repeat|print|output|display|show|reveal|echo|leak)\s+(the\s+)?(\w+\s+)?(above|system|initial|hidden|secret|master)\s+(prompt|instructions?|directives?|rules?)"
+                r"|repeat\s+(the\s+)?(above|system|initial)\s+\w+\s+(instructions?|prompt|directives?)"
+                r"|(reveal|show|output|print)\s+(\w+\s+)?(hidden|initial|secret|system|above|master|original)\s+(\w+\s+)?(prompt|instructions?|directives?|rules?)"
+                r")\b"
+            ),
             "System prompt extraction or leakage probe"
         ),
         (
@@ -74,6 +80,18 @@ class HeuristicDetector:
             0.80,
             re.compile(r"(?i)\b(what\s+(is|are)\s+your\s+(exact\s+)?(instructions?|system\s+prompt|initial\s+prompt))\b"),
             "Inquiry attempting to extract system instructions"
+        ),
+        (
+            "prompt_leakage",
+            "leakage_generic_probe",
+            0.75,
+            re.compile(
+                r"(?i)\b("
+                r"(repeat|reveal|output|print|show|echo)\s+(\w+\s+){0,3}(hidden|initial|secret|system|original)\s+(\w+\s+)?(prompt|instructions?|directives?)"
+                r"|(print|output|reveal)\s+(everything|all)\s+(above|before|prior)"
+                r")\b"
+            ),
+            "Generic prompt leakage probe attempting to extract prior context"
         ),
         (
             "delimiter_escape",
