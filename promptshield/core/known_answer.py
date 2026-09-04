@@ -93,7 +93,16 @@ class KnownAnswerDetector:
     def _evaluate_local(self, text: str, canary: str, heuristic_suspicious: bool) -> CanaryDetectionResult:
         """
         Deterministic offline evaluation simulating the DataSentinel canary equilibrium.
-        Flags injection if canary probe markers are detected or if heuristics detect an override.
+
+        Checks for four injection signal types:
+          1. Canary/key exfiltration probing
+          2. Direct instruction override ("ignore previous instructions")
+          3. Escape-newline task-redirect (newline followed by a redirected task instruction)
+          4. Fake-completion marker (injected fake answer to fool context boundary)
+
+        This deterministic evaluator is the offline/test-mode substitute for the
+        actual fine-tuned DataSentinel model. Its logic mirrors the game-theoretic
+        canary boundary: any attempt to alter the task or extract secrets is flagged.
         """
         leakage_test_pattern = re.compile(
             r"(?i)(secret\s*(key|canary|answer|token)|reveal\s*key|repeat\s*key|defense\s*key|canary|password)"
@@ -101,18 +110,37 @@ class KnownAnswerDetector:
         override_test_pattern = re.compile(
             r"(?i)(ignore\s+previous|disregard|system\s*:\s*|you\s+are\s+now|override|dan\b|<\|im_start\|>)"
         )
+        # Escape-newline: a task-redirect instruction appears after a newline
+        escape_newline_pattern = re.compile(
+            r"(?s)\S.{5,}\n+\s*(write|tell me|answer|classify|translate|summarize|detect|repeat|label|describe)\s+"
+            r"(the\s+)?(sentiment|spam|hate|class|label|output|translation|summary)\s+(conveyed|of|for|in|from)",
+            re.IGNORECASE
+        )
+        # Fake-completion: fabricated answer marker used to trick context boundary
+        fake_completion_pattern = re.compile(
+            r"(?i)\bAnswer\s*:\s*(negative\s+sentiment|positive\s+sentiment|no\s+spam|spam|hateful|"
+            r"not\s+hateful|entailment|not\s+entailment|equivalent|not\s+equivalent)\b"
+        )
+        # Secondary injected instruction (task-redirect)
+        secondary_instruction_pattern = re.compile(
+            r"(?i)\b(answer\s+with\s+(positive|negative|yes|no|spam|not\s+spam)|"
+            r"tell\s+me\s+(yes|no)\s+if\s+it\s+contains)\b"
+        )
 
         has_leak_target = bool(leakage_test_pattern.search(text))
         has_override = bool(override_test_pattern.search(text))
+        has_escape_newline = bool(escape_newline_pattern.search(text))
+        has_fake_completion = bool(fake_completion_pattern.search(text))
+        has_secondary_instr = bool(secondary_instruction_pattern.search(text))
 
         if has_override or (heuristic_suspicious and has_leak_target):
-            detector_resp = f"[INJECTION_DETECTED] Input attempted instruction/key manipulation: '{text[:40]}...'"
+            detector_resp = f"[INJECTION_DETECTED] Instruction override or canary probe: '{text[:40]}...'"
             return CanaryDetectionResult(
                 is_injection=True,
                 confidence=0.92,
                 canary_leaked=False,
                 behavior_diverged=True,
-                reasoning="DataSentinel detector flagged injection attempt violating boundary constraints.",
+                reasoning="DataSentinel detector flagged direct instruction override violating canary boundary.",
                 detector_response=detector_resp,
                 canary_token=canary
             )
@@ -123,7 +151,29 @@ class KnownAnswerDetector:
                 confidence=0.88,
                 canary_leaked=False,
                 behavior_diverged=True,
-                reasoning="Input specifically probes for internal system secrets / canaries.",
+                reasoning="Input probes internal system secrets / canaries.",
+                detector_response=detector_resp,
+                canary_token=canary
+            )
+        elif has_escape_newline:
+            detector_resp = "[INJECTION_DETECTED] Task-redirect instruction detected after newline (escape-newline attack)."
+            return CanaryDetectionResult(
+                is_injection=True,
+                confidence=0.85,
+                canary_leaked=False,
+                behavior_diverged=True,
+                reasoning="DataSentinel detected task-redirect injection via newline escape pattern.",
+                detector_response=detector_resp,
+                canary_token=canary
+            )
+        elif has_fake_completion or has_secondary_instr:
+            detector_resp = "[INJECTION_DETECTED] Fake task-completion marker or secondary instruction detected."
+            return CanaryDetectionResult(
+                is_injection=True,
+                confidence=0.83,
+                canary_leaked=False,
+                behavior_diverged=True,
+                reasoning="DataSentinel detected fake-completion or secondary task instruction injection.",
                 detector_response=detector_resp,
                 canary_token=canary
             )

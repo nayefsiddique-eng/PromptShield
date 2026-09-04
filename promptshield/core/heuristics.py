@@ -102,7 +102,28 @@ class HeuristicDetector:
             0.90,
             re.compile(r"(?i)\b(important:\s*do\s+not\s+summarize\s+this|instead\s+(please\s+)?(say|output|respond\s+with|execute))\b"),
             "Indirect context poisoning instruction steering LLM output"
-        )
+        ),
+        (
+            "indirect_injection",
+            "task_redirect_newline",
+            0.80,
+            re.compile(r"(?s)\S.{5,}\n+\s*(write|tell me|answer|classify|translate|summarize|detect|repeat|label|describe)\s+(the\s+)?(sentiment|spam|hate|class|label|output|translation|summary)\s+(conveyed|of|for|in|from)", re.IGNORECASE),
+            "Task-redirect instruction appended after a newline (escape-newline attack pattern)"
+        ),
+        (
+            "indirect_injection",
+            "fake_completion_marker",
+            0.82,
+            re.compile(r"(?i)\bAnswer\s*:\s*(negative\s+sentiment|positive\s+sentiment|no\s+spam|spam|hateful|not\s+hateful|entailment|not\s+entailment|equivalent|not\s+equivalent)\b"),
+            "Fake task-completion marker injected to fool context boundary (fake-completion attack)"
+        ),
+        (
+            "indirect_injection",
+            "secondary_instruction_inject",
+            0.78,
+            re.compile(r"(?i)\b(answer\s+with\s+(positive|negative|yes|no|spam|not\s+spam)|tell\s+me\s+(yes|no)\s+if\s+it\s+contains)\b"),
+            "Secondary injected instruction attempting to redirect LLM task output format"
+        ),
     ]
 
     def __init__(self, threshold: float = 0.65):
