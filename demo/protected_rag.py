@@ -14,7 +14,9 @@ This is the "AFTER PromptShield" demonstration case.
 Run: uvicorn demo.protected_rag:app --port 8002
 """
 
-import sys, pathlib, asyncio
+import sys
+import pathlib
+import asyncio
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 from fastapi import FastAPI

@@ -235,7 +235,7 @@ async def main():
         print(f"  {name:<45} {vuln_status:<14} {prot_status}")
 
     print(f"\n  {'-'*78}")
-    print(f"  Attack scenarios : 10")
+    print("  Attack scenarios : 10")
     print(f"  Attacks succeeded on VULNERABLE bot  : {attack_successes_vuln}/10")
     print(f"  Attacks succeeded on PROTECTED  bot  : {attack_successes_prot}/10")
     print(f"  False positives  on PROTECTED  bot  : {fp_prot}/3 benign queries")
