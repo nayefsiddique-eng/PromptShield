@@ -104,3 +104,9 @@ python demo/run_demo.py
 The `/analyze` and `/sanitize` endpoints accept up to 100,000 characters per
 prompt or context field. For network-facing deployments, set a request-body
 size limit at the reverse proxy as well.
+
+### Optional retrieval demo
+
+Install `requirements-demo.txt` to run the companion retrieval demo and its
+full test suite. The API requirements omit ChromaDB. Keep the companion demo on
+loopback while its dependency advisories are open.
