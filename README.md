@@ -98,3 +98,9 @@ uvicorn demo.protected_rag:app --port 8002
 # Terminal 3 (Run 13 test scenarios)
 python demo/run_demo.py
 ```
+
+### API request limits
+
+The `/analyze` and `/sanitize` endpoints accept up to 100,000 characters per
+prompt or context field. For network-facing deployments, set a request-body
+size limit at the reverse proxy as well.
