@@ -98,3 +98,22 @@ uvicorn demo.protected_rag:app --port 8002
 # Terminal 3 (Run 13 test scenarios)
 python demo/run_demo.py
 ```
+
+### API request limits
+
+The `/analyze` and `/sanitize` endpoints accept up to 100,000 characters per
+prompt or context field. For network-facing deployments, set a request-body
+size limit at the reverse proxy as well.
+
+### Optional retrieval demo
+
+Install `requirements-demo.txt` to run the companion retrieval demo and its
+full test suite. The API requirements omit ChromaDB. Keep the companion demo on
+loopback while its dependency advisories are open.
+
+The HTTP request envelope is capped at 3 MiB before JSON parsing. Field
+limits still apply independently. The deterministic test suite demonstrates
+specific handling of known patterns and benign multilingual text. These checks
+do not establish false-positive or false-negative rates for untested data or
+external models. PromptShield is one layer in a defense that also requires
+privilege boundaries around model tools and sensitive data.

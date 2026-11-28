@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from promptshield.config import settings
+from promptshield.api.body_limit import RequestBodyLimit
 from promptshield.core.pipeline import PromptShieldPipeline
 from promptshield.api.models import (
     AnalyzeRequest,
@@ -14,6 +15,9 @@ app = FastAPI(
     version=settings.app_version,
     description="Game-theoretic prompt injection detection and sanitization middleware."
 )
+
+MAX_REQUEST_BYTES = 3 * 1024 * 1024
+app.add_middleware(RequestBodyLimit, max_bytes=MAX_REQUEST_BYTES)
 
 pipeline = PromptShieldPipeline()
 

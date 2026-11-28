@@ -7,7 +7,8 @@ Tests the vector store, mock LLM, and end-to-end RAG pipeline
 
 import pytest
 import asyncio
-import sys, pathlib
+import sys
+import pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 from demo.documents import ALL_DOCS, BENIGN_DOCS, POISONED_DOCS

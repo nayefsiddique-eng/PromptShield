@@ -10,7 +10,8 @@ This is the "BEFORE PromptShield" demonstration case.
 Run: uvicorn demo.vulnerable_rag:app --port 8001
 """
 
-import sys, pathlib
+import sys
+import pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 from fastapi import FastAPI

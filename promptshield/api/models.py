@@ -2,9 +2,12 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 
 
+MAX_INPUT_LENGTH = 100_000
+
+
 class AnalyzeRequest(BaseModel):
-    prompt: str = Field(..., description="The user prompt to evaluate")
-    context: Optional[str] = Field(default=None, description="Optional system/RAG retrieved context")
+    prompt: str = Field(..., max_length=MAX_INPUT_LENGTH, description="The user prompt to evaluate")
+    context: Optional[str] = Field(default=None, max_length=MAX_INPUT_LENGTH, description="Optional system/RAG retrieved context")
 
 
 class AnalyzeResponse(BaseModel):
@@ -17,7 +20,7 @@ class AnalyzeResponse(BaseModel):
 
 
 class SanitizeRequest(BaseModel):
-    prompt: str = Field(..., description="The prompt or context to sanitize")
+    prompt: str = Field(..., max_length=MAX_INPUT_LENGTH, description="The prompt or context to sanitize")
 
 
 class SanitizeResponse(BaseModel):

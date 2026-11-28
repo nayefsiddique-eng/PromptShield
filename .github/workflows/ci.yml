@@ -1,10 +1,13 @@
-﻿name: PromptShield CI
+name: PromptShield CI
 
 on:
   push:
     branches: ["main", "dev"]
   pull_request:
     branches: ["main"]
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -30,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-demo.txt
           pip install -e .
 
       - name: Run unit tests (Phase 1 – detection logic, both layers)
@@ -64,4 +67,4 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Ruff check (no autofix)
-        run: ruff check promptshield/ tests/ demo/ --select E,W,F --ignore E501,E402,F401,W291,W293 || true
+        run: ruff check promptshield/ tests/ demo/ --select E,W,F --ignore E501,E402,F401,W291,W293

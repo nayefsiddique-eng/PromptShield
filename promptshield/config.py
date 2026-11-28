@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 
@@ -21,9 +21,7 @@ class Settings(BaseSettings):
     detector_model_name: str = "gpt-4o-mini"
     detector_temperature: float = 0.0
 
-    class Config:
-        env_prefix = "PROMPTSHIELD_"
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_prefix="PROMPTSHIELD_", env_file=".env", extra="ignore")
 
 
 settings = Settings()
