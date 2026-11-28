@@ -2,7 +2,6 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **PromptShield** is a model-agnostic security middleware service that sits between client applications and downstream LLM APIs. It intercepts incoming prompts and context, detects direct and indirect prompt injection attempts, and defangs or blocks them before they reach the model.
 
@@ -39,17 +38,16 @@ Neutralizes detected prompt injection markers cleanly.
 
 ---
 
-## 🔬 Evaluation & Methodology
+## Evaluation
 
-Evaluating PromptShield against 100 attack samples generated using canonical attack templates (*naive_ignore*, *escape_newline*, *fake_completion*, *combine*) yields the following performance:
+Hosted CI runs deterministic unit and integration fixtures on Ubuntu
+and Windows. These fixtures cover detection, sanitization, and request
+bounds. They do not estimate accuracy, false-positive rates, or latency
+for a representative workload or an external model.
 
-| Metric | Value |
-|--------|-------|
-| Attack Detection Rate | **100.0%** |
-| False Positive Rate (Benign Prompts) | **0.0%** |
-| Avg Detection Latency | **< 1.0 ms** (local evaluation) |
-
-> ℹ️ **Evaluation Note**: Local test evaluation runs in deterministic offline mode to simulate the DataSentinel game-theoretic canary boundary. An external LLM API key can be set in `.env` to route Layer 2 evaluation to an active remote LLM.
+Run the core API with `requirements.txt`. Keep the optional retrieval
+demo and its separate dependencies on a local or disposable test
+machine.
 
 ---
 
